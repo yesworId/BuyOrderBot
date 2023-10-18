@@ -1,0 +1,7 @@
+.idea/
+*.iml
+*.xml
+buy_order_bot/steam_guard.json
+buy_order_bot/test.py
+buy_order_bot/items.csv
+buy_order_bot/config.json
