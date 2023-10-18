@@ -1,21 +1,23 @@
 # BuyOrderBot
 This is Bot designed to automate the process of placing buy orders for Steam Market items and make it much faster.\
-I was using precious library called `steampy` for this. The author made such a good job. Big thanks to you `bukson`!\
-If someone have any idea how to improve this program -> feel free to share it with me.
+I was using precious library called `steampy` for this. The author made such a good job. Thank you `bukson`!\
+If someone have any ideas how to improve it -> feel free to share them with me.
 
 How does it work?
 ============
-* First of all, bot log into your Steam account using provided credentials. Then it gets your account balance and calculates BuyOrder limit to compare the sum of the order ​​to it. BuyOrder limit is ten times your balance.
+* First of all, bot logs into your Steam account using cookies or provided credentials. Then it gets your account balance and calculates BuyOrder limit to compare the sum of the order ​​to it. BuyOrder limit is ten times your balance.
 * Next step is to get total cost of all orders, so bot gets all of your BuyOrder listing, which still active on account for this. The program subtracts the value of the total cost from the BuyOrder limit and gets the current value of BuyOrder limit.
 * After all of this, bot is ready to place buy orders. It goes through each item in your items.csv file and tries to place buy order.
-* Program finishes after all items successfully got active buy order.
+* Program finishes after all items successfully got placed buy orders.
 
 Setup
 ============
 
-First of all create config.json file
-
-**Your config.json file should look like this for the proper work**
+config.json
+-----------
+First of all create config.json file.
+* [Obtaining API key](https://steamcommunity.com/dev/apikey)
+* [Choose your currency](https://github.com/YESW0RLD/BuyOrderBot/blob/master/README.md#currencies)
 
 ```json
 {
@@ -25,23 +27,16 @@ First of all create config.json file
   "currency": "YOUR_CURRENCY"
 }
 ```
-* [Obtaining API key](https://steamcommunity.com/dev/apikey)
-* [Choose your currency](https://github.com/YESW0RLD/BuyOrderBot/blob/master/README.md#currencies)
 
-**Example of config.json:**
-```json
-{
-  "api_key": "46302079E204013FGA3E2CA89825469A",
-  "username": "username1",
-  "password": "password1",
-  "currency": "UAH"
-}
-```
+steam_guard.json
+----------------
 
-Then, you need to obtain shared_secret from MaFile and save it in **steam_guard.json** file
+Then, you need to obtain **shared_secret** and **identity_secret** from MaFile. Save them in **steam_guard.json** file.
+
+**Pay your attention!**
+This methods are different for SDA and Steam Mobile Authenticator!
+
 * [Obtaining MaFile from Steam Desktop Authenticator](https://github.com/SteamTimeIdler/stidler/wiki/Getting-your-%27shared_secret%27-code-for-use-with-Auto-Restarter-on-Mobile-Authentication#getting-shared-secret-from-steam-desktop-authenticator-windows)
-
-**Now your steam_guard.json file should look like this**
 
 ```json
 {
@@ -50,6 +45,18 @@ Then, you need to obtain shared_secret from MaFile and save it in **steam_guard.
     "identity_secret": "YOUR_IDENTITY_SECRET"
   }
 ```
+proxies.json
+------------
+If you have proxies, you can add them in proxies.json file.
+
+```json
+{
+    "http": "http://login:password@host:port",
+    "https": "http://login:password@host:port"
+}
+```
+
+
 Usage
 ============
 You already decided which items you want to buy.
