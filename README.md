@@ -68,14 +68,24 @@ First you must write the name of the item, then price you want to buy it for, an
 
 **Example:**
 ``` csv
-Name, Price, Amount
-Snakebite Case, 1.5, 2
-Operation Bravo Case, 10.6, 1
-AK-47 | Asiimov (Field-Tested), 5.7, 1
-Paris 2023 Contenders Autograph Capsule, 3.5, 1
-Sticker | MOUZ (Holo) | Paris 2023, 15.2, 1
-Paris 2023 Mirage Souvenir Package, 50.6, 2
-Sticker | Apeks (Holo) | Paris 2023, 5.09, 1
+Name, Price, Amount, Game
+Snakebite Case, 1.5, 2, CS
+Operation Bravo Case, 10.6, 1, CS
+AK-47 | Asiimov (Field-Tested), 5.7, 1, CS
+Paris 2023 Contenders Autograph Capsule, 3.5, 1, CS
+Sticker | MOUZ (Holo) | Paris 2023, 15.2, 1, CS
+Paris 2023 Mirage Souvenir Package, 50.6, 2, CS
+Pirate Facemask, 10, 2, RUST
+Mann Co. Supply Crate Key, 5, 10, TF2
+```
+Here's the list of games:
+```txt
+    "STEAM" - Steam Market (ingame cards, wallpapers)
+    "DOTA2" - Dota 2 Market
+    "CS" - CS2 Market
+    "TF2" - TF2 Market
+    "PUBG" - Pubg Market
+    "RUST" - Rust 
 ```
 
 Running the Bot

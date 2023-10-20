@@ -155,21 +155,27 @@ class SteamBot:
             reader = csv.reader(file)
             next(reader)  # Skip header row
             for row in reader:
-                item_name, item_price, item_amount = row
-                self.items_list.append((item_name, decimal.Decimal(item_price), int(item_amount)))
+                item_name, item_price, item_amount, game_name = row
+                self.items_list.append((item_name, decimal.Decimal(item_price), int(item_amount), game_name))
         return self.items_list
 
     @login_required
-    def create_buy_order(self, item_name, item_price, item_amount):
+    def create_buy_order(self, item_name, item_price, item_amount, game_name):
         """
         Creating Buy Order for a single item.
         """
         try:
             item_price = int(item_price * 100)
-            response = self.steam_client.market.create_buy_order(item_name, item_price, item_amount,
-                                                                 GameOptions.CS, Currency[self.currency])
-            print(f"BuyOrder created for item '{item_name}' with BuyOrder ID: {response['buy_orderid']}")
-            return True
+            game_name = game_name.strip()
+            game = getattr(GameOptions, game_name, None)
+            if game is not None:
+                response = self.steam_client.market.create_buy_order(item_name, item_price, item_amount,
+                                                                     game, Currency[self.currency])
+                print(f"BuyOrder created for item '{item_name}' with BuyOrder ID: {response['buy_orderid']}")
+                return True
+            else:
+                print(f"Invalid game name: {game_name}")
+                return False
         except Exception as ex:
             print(f"Failed to create order for item '{item_name}': {str(ex)}")
             sleep(1)
@@ -186,7 +192,7 @@ class SteamBot:
 
         # Continue while there are items without BuyOrders
         while any(item[0] not in self.ordered_items_dict for item in self.items_list):
-            for item_name, item_price, item_amount in self.items_list:
+            for item_name, item_price, item_amount, game_name in self.items_list:
                 if item_name in self.ordered_items_dict:
                     continue
 
@@ -206,7 +212,7 @@ class SteamBot:
                     continue
 
                 # Place the buy order for the item
-                if self.create_buy_order(item_name, item_price, item_amount):
+                if self.create_buy_order(item_name, item_price, item_amount, game_name):
                     self.ordered_items_dict[item_name] = {
                         'name': item_name,
                         'price': item_price,
