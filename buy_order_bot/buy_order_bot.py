@@ -66,7 +66,7 @@ class SteamBot:
 
     def login_required(func):
         def func_wrapper(self, *args, **kwargs):
-            if self.steam_client.is_session_alive() is not True:
+            if self.steam_client.was_login_executed is not True:
                 print("Login method was not used.  Attempting to log in...")
                 self.login()
             return func(self, *args, **kwargs)
