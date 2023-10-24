@@ -1,17 +1,23 @@
 # BuyOrderBot
-This is Bot designed to automate the process of placing buy orders for Steam Market items and make it much faster.\
-I was using precious library called `steampy` for this. The author made such a good job. Thank you `bukson`!\
-If someone have any ideas how to improve it -> feel free to share them with me.
+This Bot is designed to automate process of placing buy orders for Steam Market items.\
+If you like this project, don't forget to star it.\
+I'm using [steampy](https://github.com/bukson/steampy), precious library for this bot. The author made such a good job. Thank you [bukson!](https://github.com/bukson)\
+If someone has any ideas how to improve it -> feel free to share them with me.
 
-How does it work?
-============
+## Features
+* Placing buy orders for different items;
+* Using cookies for authentication;
+* Using **proxies**;
+* Placing buy orders for different games: **CS2, DOTA2, RUST, TF2**;
+* Prints user balance and buy order limit;
+
+## How does it work?
 * First of all, bot logs into your Steam account using cookies or provided credentials. Then it gets your account balance and calculates BuyOrder limit to compare the sum of the order ​​to it. BuyOrder limit is ten times your balance.
 * Next step is to get total cost of all orders, so bot gets all of your BuyOrder listing, which still active on account for this. The program subtracts the value of the total cost from the BuyOrder limit and gets the current value of BuyOrder limit.
 * After all of this, bot is ready to place buy orders. It goes through each item in your items.csv file and tries to place buy order.
 * Program finishes after all items successfully got placed buy orders.
 
-Setup
-============
+## Setup
 
 config.json
 -----------
@@ -57,8 +63,7 @@ If you have proxies, you can add them in proxies.json file.
 ```
 
 
-Usage
-============
+## Usage
 You already decided which items you want to buy.
 
 Now you need to create items.csv file where you write down all the item names with the prices and item amount you want to buy.
@@ -88,21 +93,19 @@ Here's the list of games:
     "RUST" - Rust 
 ```
 
-Running the Bot
-============
-1. Open a terminal or command prompt in the folder with the BuyOrderBot script.
+## Running the Bot
+1. Open a terminal or command prompt in the correct folder with the BuyOrderBot script.
 2. Enter the following command to start the bot:
 
 ```python
 python buy_order_bot.py
 ```
 
-1. The bot will automatically log in to your Steam account and start placing Buy Orders for your items.
+The bot will automatically log in to your Steam account and start placing Buy Orders for your items.
 
 Follow the previous instructions and monitor the messages displayed in the terminal to ensure that your BuyOrderBot is working properly.
 
-Currencies
-----------
+## Currencies
 
 | Currency class | Description                 |
 | ---            | ---                         |
