@@ -1,1 +1,1 @@
-steampy==1.0.3
+steampy==1.1.0
