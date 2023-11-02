@@ -7,7 +7,7 @@ import os
 import re
 import csv
 import json
-import decimal
+from decimal import Decimal
 
 from time import sleep
 
@@ -74,7 +74,7 @@ class SteamBot:
 
     def login(self):
         """
-        Authorizing into a Steam account using the provided credentials and Steam Guard.
+        Authorizing into Steam account using provided credentials.
         Returns an instance of the SteamClient after successful authorization.
         """
         try:
@@ -124,7 +124,7 @@ class SteamBot:
         buy_listings = market_listings.get("buy_orders")
 
         if buy_listings:
-            self.total_cost = decimal.Decimal(0)  # Initialize as Decimal
+            self.total_cost = Decimal(0)  # Initialize as Decimal
             for listing_id, listing_info in buy_listings.items():
                 item_name = listing_info["item_name"]
 
@@ -132,7 +132,7 @@ class SteamBot:
                 price = re.sub(r'[^\d.,]', '', listing_info["price"])
                 price = price.replace(',', '.')
                 quantity = listing_info["quantity"]
-                self.total_cost += decimal.Decimal(price) * quantity  # Convert to Decimal
+                self.total_cost += Decimal(price) * quantity  # Convert to Decimal
 
                 self.ordered_items_dict[item_name] = {
                     "name": item_name,
@@ -144,19 +144,19 @@ class SteamBot:
 
         else:
             print("No buy orders found.")
-            self.total_cost = decimal.Decimal(0)
-            return self.total_cost, self.ordered_items_dict  # Return Decimal(0) when no buy orders found
+            self.total_cost = Decimal(0)  # Total cost of all orders set as '0' when no buy orders found
+            return self.total_cost, self.ordered_items_dict
 
     def read_items_from_csv(self):
         """
         Read items from a CSV file and return a list of tuples containing item_name, item_price, and item_amount.
         """
-        with open(self.items_file, newline='') as file:
+        with open(self.items_file, newline='', encoding='utf-8') as file:
             reader = csv.reader(file)
             next(reader)  # Skip header row
             for row in reader:
                 item_name, item_price, item_amount, game_name = row
-                self.items_list.append((item_name, decimal.Decimal(item_price), int(item_amount), game_name))
+                self.items_list.append((item_name, Decimal(item_price), int(item_amount), game_name.strip()))
         return self.items_list
 
     @login_required
@@ -166,7 +166,6 @@ class SteamBot:
         """
         try:
             item_price = int(item_price * 100)
-            game_name = game_name.strip()
             game = getattr(GameOptions, game_name, None)
             if game is not None:
                 response = self.steam_client.market.create_buy_order(item_name, item_price, item_amount,
@@ -197,17 +196,17 @@ class SteamBot:
                     continue
 
                 # Check if enough funds for Buy Order
-                if decimal.Decimal(item_price) > self.balance:
+                if Decimal(item_price) > self.balance:
                     print(f"Price for item '{item_name} is higher than balance'")
                     continue
 
                 # Check if the balance exceeds
-                if decimal.Decimal(item_price) * item_amount > self.balance:
+                if Decimal(item_price) * item_amount > self.balance:
                     print(f"BuyOrder for item '{item_name}' exceeds balance")
                     continue
 
                 # Check if the buy order limit exceeds
-                if decimal.Decimal(item_price) * item_amount > self.buy_order_limit:
+                if Decimal(item_price) * item_amount > self.buy_order_limit:
                     print(f"BuyOrder for item '{item_name}' exceeds BuyOrder limit")
                     continue
 
@@ -218,7 +217,7 @@ class SteamBot:
                         'price': item_price,
                         'quantity': item_amount,
                     }
-                    self.buy_order_limit -= decimal.Decimal(item_price) * item_amount
+                    self.buy_order_limit -= Decimal(item_price) * item_amount
                     print(f"BuyOrder limit: {self.buy_order_limit:.2f} {self.currency}")
 
         print("Finished processing of all items.")
