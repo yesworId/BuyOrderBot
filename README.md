@@ -76,10 +76,11 @@ First you must write the name of the item, then price you want to buy it for, an
 Name, Price, Amount, Game
 Snakebite Case, 1.5, 2, CS
 Operation Bravo Case, 10.6, 1, CS
-AK-47 | Asiimov (Field-Tested), 5.7, 1, CS
 Paris 2023 Contenders Autograph Capsule, 3.5, 1, CS
-Sticker | MOUZ (Holo) | Paris 2023, 15.2, 1, CS
 Paris 2023 Mirage Souvenir Package, 50.6, 2, CS
+Sticker | MOUZ (Holo) | Paris 2023, 15.2, 1, CS
+AK-47 | Asiimov (Field-Tested), 5.7, 1, CS
+StatTrak™ AK-47 | Phantom Disruptor (Factory New), 20, 1, CS
 Pirate Facemask, 10, 2, RUST
 Mann Co. Supply Crate Key, 5, 10, TF2
 ```
