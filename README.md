@@ -1,4 +1,7 @@
 # BuyOrderBot
+```
+Bot for placing Buy Orders on Steam Community Market
+```
 This Bot is designed to automate process of placing buy orders for Steam Market items.\
 If you like this project, don't forget to star it.\
 I'm using [steampy](https://github.com/bukson/steampy), precious library for this bot. The author made such a good job. Thank you [bukson!](https://github.com/bukson)\
@@ -19,12 +22,10 @@ If someone has any ideas how to improve it -> feel free to share them with me.
 
 ## Setup
 
-config.json
------------
-First of all create config.json file.
+### config.json
+First of all, create config.json file.
 * [Obtaining API key](https://steamcommunity.com/dev/apikey)
 * [Choose your currency](https://github.com/YESW0RLD/BuyOrderBot/blob/master/README.md#currencies)
-
 ```json
 {
   "api_key": "YOUR_API_KEY",
@@ -34,13 +35,11 @@ First of all create config.json file.
 }
 ```
 
-steam_guard.json
-----------------
-
+### steam_guard.json
 Then, you need to obtain **shared_secret** and **identity_secret** from MaFile. Save them in **steam_guard.json** file.
 
 **Pay your attention!**
-This methods are different for SDA and Steam Mobile Authenticator!
+These methods are different for SDA and Steam Mobile Authenticator!
 
 * [Obtaining MaFile from Steam Desktop Authenticator](https://github.com/SteamTimeIdler/stidler/wiki/Getting-your-%27shared_secret%27-code-for-use-with-Auto-Restarter-on-Mobile-Authentication#getting-shared-secret-from-steam-desktop-authenticator-windows)
 
@@ -51,8 +50,7 @@ This methods are different for SDA and Steam Mobile Authenticator!
     "identity_secret": "YOUR_IDENTITY_SECRET"
   }
 ```
-proxies.json
-------------
+### proxies.json
 If you have proxies, you can add them in proxies.json file.
 
 ```json
