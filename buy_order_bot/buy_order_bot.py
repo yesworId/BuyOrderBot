@@ -33,17 +33,10 @@ class SteamBot:
         self.cookies = self.get_cookies()
         self.proxies = self.get_proxies()
 
-        self.steam_client = SteamClient(
-            api_key=self.api_key,
-            username=self.username,
-            password=self.password,
-            steam_guard=self.steam_guard,
-            login_cookies=self.cookies,
-            proxies=self.proxies)
-
+        self.steam_client = None
         self.balance = None
         self.buy_order_limit = None
-        self.total_cost = None
+        self.total_cost = Decimal(0)
 
         self.ordered_items_dict = {}
         self.items_list = []
@@ -74,21 +67,40 @@ class SteamBot:
 
     def login(self):
         """
-        Authorizing into Steam account using provided credentials.
+        Authorizing into Steam account using cookies and provided credentials.
         Returns an instance of the SteamClient after successful authorization.
         """
-        try:
-            self.steam_client.login()
-            print(f"Successfully Logged in {self.username}")
-        except steampy.exceptions.InvalidCredentials:
-            print("Wrong credentials.")
+        self.steam_client = SteamClient(
+            api_key=self.api_key,
+            username=self.username,
+            password=self.password,
+            steam_guard=self.steam_guard,
+            login_cookies=self.cookies,
+            proxies=self.proxies)
+
+        # Check if the session remains active after logging in with cookies.
+        # If not, log in using credentials.
+        if not self.steam_client.is_session_alive():
+
+            for attempt in range(3):
+                try:
+                    self.steam_client.login()
+                    print(f"Successfully logged in {self.username}")
+                    return self.steam_client.is_session_alive()
+                except steampy.exceptions.InvalidCredentials:
+                    print("Wrong credentials.")
+                    exit(1)
+                except steampy.exceptions.CaptchaRequired:
+                    print("Captcha appeared try again later.")
+                    break
+                except Exception as ex:
+                    print(f"Failed to login into account: {str(ex)}")
+                    sleep(20)
+
+            print("Reached max login attempts. Exiting.")
             exit(1)
-        except steampy.exceptions.CaptchaRequired:
-            print("Captcha appeared try again later.")
-            exit(1)
-        except Exception as ex:
-            print(f"Failed to login into account: {str(ex)}")
-            exit(1)
+
+        print("Successfully logged in using cookies")
 
         return self.steam_client
 
@@ -97,18 +109,20 @@ class SteamBot:
         """
         Getting account balance and Buy Order limit.
         """
-        try:
-            # Initialize and print account balance
-            self.balance = self.steam_client.get_wallet_balance()
-            print(f"Balance: {self.balance} {self.currency}")
+        while self.balance is None:
+            try:
+                # Initialize and print account balance
+                self.balance = self.steam_client.get_wallet_balance()
+                print(f"Balance: {self.balance} {self.currency}")
 
-            # Initialize BuyOrder limit (10 * balance)
-            self.buy_order_limit = 10 * self.balance
+                # Initialize BuyOrder limit (10 * balance)
+                self.buy_order_limit = 10 * self.balance
 
-            return self.balance, self.buy_order_limit
-        except Exception as ex:
-            print(f"Failed to initialize account balance: {str(ex)}")
-            exit(1)
+            except Exception as ex:
+                print(f"Failed to initialize account balance: {str(ex)}")
+                sleep(5)
+
+        return self.balance, self.buy_order_limit
 
     @login_required
     def get_buy_order_listings(self):
@@ -124,15 +138,13 @@ class SteamBot:
         buy_listings = market_listings.get("buy_orders")
 
         if buy_listings:
-            self.total_cost = Decimal(0)  # Initialize as Decimal
             for listing_id, listing_info in buy_listings.items():
-                item_name = listing_info["item_name"]
 
-                # Update "price" value (get rid of currency symbol)
-                price = re.sub(r'[^\d.,]', '', listing_info["price"])
+                item_name = listing_info["item_name"]
+                price = re.sub(r'[^\d.,]', '', listing_info["price"])  # Get rid of currency symbol
                 price = price.replace(',', '.')
                 quantity = listing_info["quantity"]
-                self.total_cost += Decimal(price) * quantity  # Convert to Decimal
+                self.total_cost += Decimal(price) * quantity  # Add-up the sum of every order
 
                 self.ordered_items_dict[item_name] = {
                     "name": item_name,
@@ -140,12 +152,10 @@ class SteamBot:
                     "quantity": quantity
                 }
 
-            return self.total_cost, self.ordered_items_dict
-
         else:
             print("No buy orders found.")
-            self.total_cost = Decimal(0)  # Total cost of all orders set as '0' when no buy orders found
-            return self.total_cost, self.ordered_items_dict
+
+        return self.total_cost, self.ordered_items_dict
 
     def read_items_from_csv(self):
         """
@@ -165,15 +175,14 @@ class SteamBot:
         Creating Buy Order for a single item.
         """
         try:
-            item_price = int(item_price * 100)
             game = getattr(GameOptions, game_name, None)
             if game is not None:
-                response = self.steam_client.market.create_buy_order(item_name, item_price, item_amount,
+                response = self.steam_client.market.create_buy_order(item_name, int(item_price * 100), item_amount,
                                                                      game, Currency[self.currency])
-                print(f"BuyOrder created for item '{item_name}' with BuyOrder ID: {response['buy_orderid']}")
+                print(f"Created Buy Order for '{item_name}' with BuyOrder ID: {response['buy_orderid']}")
                 return True
             else:
-                print(f"Invalid game name: {game_name}")
+                print(f"Invalid game name: {game_name} for item: {item_name}")
                 return False
         except Exception as ex:
             print(f"Failed to create order for item '{item_name}': {str(ex)}")
@@ -210,7 +219,7 @@ class SteamBot:
                     print(f"BuyOrder for item '{item_name}' exceeds BuyOrder limit")
                     continue
 
-                # Place the buy order for the item
+                # Place Buy Order for item
                 if self.create_buy_order(item_name, item_price, item_amount, game_name):
                     self.ordered_items_dict[item_name] = {
                         'name': item_name,
@@ -232,12 +241,11 @@ class SteamBot:
             print(f"Couldn't save cookies: {ex}")
 
     def main(self):
-
-        config_file = 'config.json'
-
-        if not are_credentials_filled(config_file):
+        if not are_credentials_filled('config.json'):
             print('Please fill missing credentials in config.json')
             exit(1)
+
+        self.login()
 
         self.save_cookies()
 
@@ -247,12 +255,13 @@ class SteamBot:
 
         # Calculate and print available buy order limit
         self.buy_order_limit -= self.total_cost
+
         if self.buy_order_limit > 0:
             print(f"Available Buy Order Limit: {self.buy_order_limit} {self.currency}")
+            self.place_buy_orders_for_items()
         else:
-            print(f"Sum of active orders exceeds balance: {self.buy_order_limit} {self.currency}")
-
-        self.place_buy_orders_for_items()
+            print(f"Couldn't place buy orders. "
+                  f"Sum of active orders exceeds balance: {self.buy_order_limit} {self.currency}")
 
 
 bot = SteamBot(config_file='config.json', steam_guard_file='steam_guard.json', items_file='items.csv')
