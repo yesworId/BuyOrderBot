@@ -59,7 +59,7 @@ class SteamBot:
 
     def login_required(func):
         def func_wrapper(self, *args, **kwargs):
-            if self.steam_client.was_login_executed is not True:
+            if not self.steam_client.is_session_alive():
                 print("Login method was not used.  Attempting to log in...")
                 self.login()
             return func(self, *args, **kwargs)
@@ -100,7 +100,8 @@ class SteamBot:
             print("Reached max login attempts. Exiting.")
             exit(1)
 
-        print("Successfully logged in using cookies")
+        else:
+            print("Successfully logged in using cookies")
 
         return self.steam_client
 
@@ -235,10 +236,13 @@ class SteamBot:
     def save_cookies(self):
         try:
             with open('cookies.json', 'w', encoding='utf-8') as cookies_file:
-                json.dump(self.steam_client._session.cookies.get_dict(), cookies_file)
+                self.cookies = self.steam_client._session.cookies.get_dict()
+                json.dump(self.cookies, cookies_file)
                 print("Saved cookies")
         except Exception as ex:
             print(f"Couldn't save cookies: {ex}")
+
+        return self.cookies
 
     def main(self):
         if not are_credentials_filled('config.json'):
