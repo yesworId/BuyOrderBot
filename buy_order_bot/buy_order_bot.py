@@ -84,7 +84,8 @@ class SteamBot:
 
             for attempt in range(3):
                 try:
-                    self.steam_client.login()
+                    self.steam_client = SteamClient(self.api_key)
+                    self.steam_client.login(self.username, self.password, self.steam_guard)
                     print(f"Successfully logged in {self.username}")
                     return self.steam_client.is_session_alive()
                 except steampy.exceptions.InvalidCredentials:
@@ -166,8 +167,9 @@ class SteamBot:
             reader = csv.reader(file)
             next(reader)  # Skip header row
             for row in reader:
-                item_name, item_price, item_amount, game_name = row
-                self.items_list.append((item_name, Decimal(item_price), int(item_amount), game_name.strip()))
+                if len(row) == 4:  # Check if the row is full
+                    item_name, item_price, item_amount, game_name = row
+                    self.items_list.append((item_name, Decimal(item_price), int(item_amount), game_name.strip()))
         return self.items_list
 
     @login_required
@@ -202,6 +204,7 @@ class SteamBot:
         # Continue while there are items without BuyOrders
         while any(item[0] not in self.ordered_items_dict for item in self.items_list):
             for item_name, item_price, item_amount, game_name in self.items_list:
+                # Check if already have buy order for current item
                 if item_name in self.ordered_items_dict:
                     continue
 
@@ -245,27 +248,30 @@ class SteamBot:
         return self.cookies
 
     def main(self):
-        if not are_credentials_filled('config.json'):
-            print('Please fill missing credentials in config.json')
-            exit(1)
+        try:
+            if not are_credentials_filled('config.json'):
+                print('Please fill missing credentials in config.json')
+                exit(1)
 
-        self.login()
+            self.login()
 
-        self.update_cookies()
+            self.update_cookies()
 
-        self.initialize_account_balance()
+            self.initialize_account_balance()
 
-        self.get_buy_order_listings()
+            self.get_buy_order_listings()
 
-        # Calculate and print available buy order limit
-        self.buy_order_limit -= self.total_cost
+            # Calculate and print available buy order limit
+            self.buy_order_limit -= self.total_cost
 
-        if self.buy_order_limit > 0:
-            print(f"Available Buy Order Limit: {self.buy_order_limit} {self.currency}")
-            self.place_buy_orders_for_items()
-        else:
-            print(f"Couldn't place buy orders. "
-                  f"Sum of active orders exceeds balance: {self.buy_order_limit} {self.currency}")
+            if self.buy_order_limit > 0:
+                print(f"Available Buy Order Limit: {self.buy_order_limit} {self.currency}")
+                self.place_buy_orders_for_items()
+            else:
+                print(f"Couldn't place buy orders. "
+                      f"Sum of active orders exceeds balance: {self.buy_order_limit} {self.currency}")
+        except KeyboardInterrupt:
+            print("Stopped the code")
 
 
 bot = SteamBot(config_file='config.json', steam_guard_file='steam_guard.json', items_file='items.csv')
